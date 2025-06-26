@@ -21,7 +21,12 @@ export const PRODUCT_TYPE_COLORS = {
   'simple': 'secondary',
   'configurable': 'primary',
   'virtual': 'default',
-  'physical': 'primary',
+};
+
+export const PRODUCT_TYPE_DISPLAY_NAMES = {
+  'simple': 'Simple',
+  'configurable': 'Configurable',
+  'virtual': 'Virtual',
 };
 
 export const FLAG_ICONS = {
