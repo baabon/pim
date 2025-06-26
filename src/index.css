@@ -1,0 +1,362 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: "IBM Plex Sans", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: #0a1a28;
+  background-color: #fff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+#root {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  height: calc(100% - 90px);
+  margin-top: 90px;
+  overflow: hidden;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  height: 90px;
+  z-index: 1050 !important;
+}
+
+header > div {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 30px;
+  color: #000;
+  gap: 40px;
+}
+
+header .menu-icon {
+  width: 30px;
+  height: 25px;
+  min-width: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+header .menu-icon .bar {
+  height: 4px;
+  background-color: #333;
+  border-radius: 2px;
+}
+
+header .logotipo,
+.google-login-container .logotipo {
+  display: flex;
+  align-items: center;
+  max-width: 250px;
+}
+
+header .logotipo img,
+.google-login-container .logotipo img {
+  width: 100%;
+  height: 100%;
+}
+
+header .avatar {
+  cursor: pointer;
+}
+
+header .account-info {
+  position: absolute;
+  right: 0;
+  top: 90%;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  cursor: default;
+}
+
+header .account-info .logout {
+  margin-top: 6px;
+  cursor: pointer;
+  background-color: #0a1a28;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  padding: 6px 0;
+  transition: color 0.3s ease;
+}
+
+header .account-info .logout:hover {
+  color: #21E0B2;
+}
+
+.google-login-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0 60px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  min-height: 250px;
+  position: relative;
+}
+
+.google-login {
+  width: 100%;
+  margin: 20px 0 30px;
+}
+
+.google-login-label {
+  font-size: 10px;
+  position: absolute;
+  bottom: 8px;
+  border-top: 1px solid #e0e0e0;
+  width: 100%;
+  padding-top: 10px;
+}
+
+.google-login-error {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+  display: block;
+}
+
+.sidebar {
+  background-color: #EFEFEF;
+  position: absolute;
+  left: -90px;
+  top: 0;
+  width: 90px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: left 0.3s ease;
+  z-index: 1050;
+  margin-top: 90px;
+  height: calc(100% - 90px);
+}
+
+.sidebar.open {
+  left: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar > ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar > ul li,
+.settings {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease-out;
+  gap: 3px;
+  position: relative;
+}
+
+.sidebar > ul li label,
+.settings label {
+  font-size: 12px;
+  color: #828282;
+  font-weight: 500;
+  transition: color 0.3s ease-out;
+  cursor: pointer;
+}
+
+.sidebar > ul li svg path,
+.settings svg path {
+  transition: fill 0.3s ease-out;
+}
+
+.sidebar > ul li:hover,
+.settings:hover {
+  background-color: #0a1a28;
+}
+
+.sidebar > ul li:hover label,
+.settings:hover label {
+  color: #fff;
+}
+
+.sidebar > ul li:hover svg path,
+.settings:hover svg path {
+  fill: #fff;
+}
+
+.submenu {
+  position: fixed;
+  left: 90px;
+  top: 90px;
+  background: #0a1a28;
+  padding: 0;
+  min-width: 150px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 10;
+  transition: background-color 0.3s ease-out;
+}
+
+.submenu li {
+  padding: 12px 20px !important;
+  white-space: nowrap;
+  color: #fff;
+  font-weight: 500;
+  font-size: 12px;
+  transition: color 0.3s ease-out;
+  display: block !important;
+  text-align: left;
+}
+
+.submenu li:hover {
+  background-color: #30475c !important ;
+  color: #fff;
+}
+
+.icon-cube svg {
+  max-width: 40px;
+}
+
+.icon-license svg {
+  max-width: 37px;
+}
+
+.icon-trash svg {
+  max-width: 35px;
+}
+
+.settings svg {
+  max-width: 40px;
+}
+
+main {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+main > div {
+  width: 100%;
+  height: 100%;
+  padding: 20px 40px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.module-title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+button:focus, 
+button:focus-visible {
+    outline: none !important;
+}
+
+@media screen and (max-width: 767px) {
+  main > div {
+    padding: 20px 10px;
+  } 
+}
