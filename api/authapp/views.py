@@ -336,10 +336,17 @@ class AppUserDetailView(RetrieveUpdateAPIView):
     URL: /v1/users/{id}/
     Métodos: GET, PUT, PATCH
     Autenticación requerida: JWT (AppUserJWTAuthentication)
-    Permisos requeridos: IsAuthenticated, IsActiveAppUser, IsAdminAppUser (para algunas acciones)
     """
     serializer_class = AppUserSerializer
-    permission_classes = [IsAuthenticated, IsActiveAppUser, IsAdminAppUser]
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.request.method in ['PUT', 'PATCH']:
+            return [IsAuthenticated(), IsActiveAppUser(), IsAdminAppUser()]
+        return [IsAuthenticated(), IsActiveAppUser()]
+
 
     def get_queryset(self):
         """

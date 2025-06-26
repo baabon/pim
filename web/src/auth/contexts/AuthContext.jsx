@@ -22,113 +22,164 @@ export function AuthProvider({ children }) {
     if (reason) {
       localStorage.setItem('logout_reason', reason)
     }
-    window.location.href = '/auth'
+    window.location.replace('/auth')
+  }
+
+  const validateUser = async () => {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/v1/users/${currentUser.id}/`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${user.access}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!res.ok) {
+        return false
+      }
+
+      const data = await res.json()
+      const freshUserData = data;
+
+      if (freshUserData.role.code !== currentUser.role) {
+        logout('Tus permisos han cambiado. Por favor, inicia sesión de nuevo.');
+        return false;
+      }
+      
+      if (!freshUserData.is_active) {
+          logout('Tu cuenta ha sido desactivada.');
+          return false;
+      }
+
+      return true 
+
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
 
   const refreshToken = async () => {
-    if (!user?.refresh) return false
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    if (!currentUser?.refresh) {
+      logout('Sesión no encontrada');
+      return false;
+    }
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/v1/token/refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh: user.refresh }),
+        body: JSON.stringify({ refresh: currentUser.refresh }),
       })
 
       if (!res.ok) {
-        logout('Token inválido o expirado')
+        const errorData = await res.json();
+        const reason = errorData.detail || 'Tu sesión ha expirado.';
+        logout(reason);
         return false
       }
-
+      
       const data = await res.json()
-      const updatedUser = { ...user, access: data.access }
+
+      const freshUserData = data.user;
+
+      const updatedUser = {
+        ...currentUser,
+        access: data.access,
+        role: freshUserData.role,
+      };
 
       setUser(updatedUser)
       localStorage.setItem('user', JSON.stringify(updatedUser))
-      return true
+      return true 
+
     } catch (error) {
-      console.error('Error refrescando token:', error)
-      logout('Error al refrescar token')
+      console.error('Error de conexión al refrescar token:', error)
+      logout('Error de red al validar tu sesión.')
       return false
     }
   }
 
   const fetchWithRefresh = async (url, options = {}) => {
-    if (!user) throw new Error('No authenticated')
+    let currentUser = JSON.parse(localStorage.getItem('user'));
+    if (!currentUser) {
+      logout("No estás autenticado.");
+      throw new Error('Usuario no autenticado');
+    }
+
+    const decodedAccess = jwtDecode(currentUser.access)
+    const now = Date.now() / 1000
+
+    if (decodedAccess.exp < now) {
+      console.log("Token de acceso expirado, refrescando proactivamente...");
+      const refreshed = await refreshToken();
+      if (!refreshed) {
+        throw new Error('La sesión no pudo ser validada. El usuario fue deslogueado.');
+      }
+      currentUser = JSON.parse(localStorage.getItem('user'));
+    }
 
     const authHeaders = {
-      Authorization: `Bearer ${user.access}`,
+      Authorization: `Bearer ${currentUser.access}`,
       'Content-Type': 'application/json',
       ...options.headers,
     }
 
+    const validate = await validateUser();
+
     let response = await fetch(url, { ...options, headers: authHeaders })
 
     if (response.status === 401) {
+      console.log("Recibido 401, intentando un segundo refresco...");
       const refreshed = await refreshToken()
-      if (!refreshed) throw new Error('No se pudo refrescar el token')
+      if (!refreshed) {
+          throw new Error('No se pudo refrescar el token después de un error 401.')
+      }
 
       const newAuthHeaders = {
+        ...authHeaders,
         Authorization: `Bearer ${JSON.parse(localStorage.getItem('user')).access}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
       }
 
       response = await fetch(url, { ...options, headers: newAuthHeaders })
     }
 
     if (response.status === 403) {
-      logout('Usuario desactivado o sin permisos')
-      throw new Error('Usuario desactivado o sin permisos')
+      logout('No tienes permiso para realizar esta acción.');
+      throw new Error('Usuario sin permisos (403)');
     }
 
     return response
   }
 
   useEffect(() => {
-    const validateRefreshToken = () => {
+    const validateRefreshTokenOnLoad = () => {
       try {
         const stored = localStorage.getItem('user')
         if (!stored) return
 
         const parsed = JSON.parse(stored)
-        const decoded = jwtDecode(parsed.refresh)
+        if (!parsed.refresh) return logout('Sesión inválida.');
 
+        const decoded = jwtDecode(parsed.refresh)
         const now = Date.now() / 1000
+
         if (decoded.exp < now) {
-          console.warn('Refresh token expirado')
-          logout('Token expirado')
+          console.warn('Refresh token expirado en la carga inicial.')
+          logout('Tu sesión ha expirado.')
         }
       } catch (error) {
-        console.error('Token inválido o corrupto:', error)
-        logout('Token inválido')
+        console.error('Token de refresh corrupto:', error)
+        logout('Token de sesión inválido.')
       }
     }
 
-    validateRefreshToken()
+    validateRefreshTokenOnLoad()
   }, [])
-
-  useEffect(() => {
-    const checkRoleChange = () => {
-      const stored = localStorage.getItem('user')
-      if (!stored) return
-
-      try {
-        const parsed = JSON.parse(stored)
-        const decoded = jwtDecode(parsed.access)
-
-        if (parsed.role && decoded.role && parsed.role !== decoded.role) {
-          logout('Cambio de rol detectado')
-        }
-      } catch (err) {
-        console.error('Error verificando role:', err)
-        logout('Error al verificar rol')
-      }
-    }
-
-    const interval = setInterval(checkRoleChange, 5000)
-    return () => clearInterval(interval)
-  }, [])
+  
 
   return (
     <AuthContext.Provider value={{ user, login, logout, fetchWithRefresh }}>

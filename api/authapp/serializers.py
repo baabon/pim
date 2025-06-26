@@ -21,12 +21,22 @@ class AppTokenRefreshSerializer(TokenRefreshSerializer):
 
         try:
             user = AppUser.objects.select_related('role').get(id=user_id)
+            
             if not user.is_active:
                 raise AuthenticationFailed('Usuario desactivado', code='user_inactive')
 
             access = refresh.access_token
             access['role'] = user.role.code
             data['access'] = str(access)
+            
+            data['user'] = {
+                'id': user.id,
+                'email': user.email,
+                'full_name': user.full_name,
+                'is_active': user.is_active,
+                'role': user.role.code if user.role else None,
+                'picture': user.picture
+            }
 
         except AppUser.DoesNotExist:
             raise AuthenticationFailed('Usuario no encontrado', code='user_not_found')

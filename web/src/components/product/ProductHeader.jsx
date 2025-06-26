@@ -56,8 +56,8 @@ export default function ProductHeader({
     const scrollElement = mainScrollRef.current;
     if (!scrollElement) return;
 
-    const COMPACT_THRESHOLD = 100;
-    const DECOMPACT_THRESHOLD = 60;
+    const COMPACT_THRESHOLD = 200;
+    const DECOMPACT_THRESHOLD = 50;
     const DEBOUNCE_DELAY = 100;
 
     const handleScroll = () => {
